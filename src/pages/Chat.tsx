@@ -1,17 +1,15 @@
+import { useEffect } from "react"; 
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+// Input is no longer needed since the iframe handles it
 import { 
-  Send, 
   MessageSquare,
   Sparkles,
   BarChart3,
   Download,
   RefreshCw,
-  Bot,
-  User,
   Waves
 } from "lucide-react";
 
@@ -25,24 +23,22 @@ const Chat = () => {
     "Compare ocean currents in Atlantic and Pacific"
   ];
 
-  const chatHistory = [
-    {
-      type: "bot",
-      message: "Hello! I am FloatChat. How can I assist you with ARGO float data today?",
-      timestamp: "Just now"
-    },
-    {
-      type: "user", 
-      message: "What is the average salinity near the equator?",
-      timestamp: "2 minutes ago"
-    },
-    {
-      type: "bot",
-      message: "The average sea surface salinity near the equator (between 5°N and 5°S) typically ranges from 34.5 to 35.5 Practical Salinity Units (PSU). Here is a visualization of salinity over a recent period:",
-      timestamp: "1 minute ago",
-      hasVisualization: true
-    }
-  ];
+  useEffect(() => {
+    const script = document.createElement('script');
+    
+    // All attributes from your <script> tag are set here
+    script.defer = true;
+    script.src = "https://app.relevanceai.com/embed/chat-bubble.js";
+    script.dataset.relevanceaiShareId = "f1db6c/a1235268-604d-49b6-9d97-e8501768b7a2/90598398-1a6d-41ab-8986-6380e58c7a73";
+    script.dataset.shareStyles = "hide_tool_steps=false&hide_file_uploads=false&hide_conversation_list=false&bubble_style=agent&primary_color=%23685FFF&bubble_icon=pd%2Fchat&input_placeholder_text=Type+your+message...&hide_logo=false&hide_description=false";
+
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []); // The empty dependency array [] means this effect runs only once.
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,9 +48,9 @@ const Chat = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid lg:grid-cols-4 gap-8 h-[calc(100vh-8rem)]">
             
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              <Card>
+            {/* Sidebar (with previous scrolling fix) */}
+            <div className="lg:col-span-1 flex flex-col gap-6">
+              <Card className="flex-1 flex flex-col overflow-hidden">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-primary" />
@@ -64,7 +60,7 @@ const Chat = () => {
                     Try these example queries to get started
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="flex-1 space-y-3 overflow-y-auto"><div className="space-y-3 pr-4">
                   {exampleQueries.map((query, index) => (
                     <Button
                       key={index}
@@ -75,7 +71,7 @@ const Chat = () => {
                       <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="text-sm">{query}</span>
                     </Button>
-                  ))}
+                  ))}</div>
                 </CardContent>
               </Card>
 
@@ -83,7 +79,7 @@ const Chat = () => {
                 <CardHeader>
                   <CardTitle className="text-lg">Quick Links</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 pr-6">
                   <Button variant="outline" size="sm" className="w-full justify-start">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Dashboard
@@ -122,82 +118,16 @@ const Chat = () => {
                   </div>
                 </CardHeader>
 
-                {/* Chat Messages */}
-                <CardContent className="flex-1 p-0 overflow-y-auto">
-                  <div className="p-6 space-y-6">
-                    {chatHistory.map((message, index) => (
-                      <div key={index} className={`flex gap-4 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          message.type === 'bot' 
-                            ? 'bg-primary/10 text-primary' 
-                            : 'bg-accent/10 text-accent'
-                        }`}>
-                          {message.type === 'bot' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                        </div>
-                        <div className={`max-w-[80%] ${message.type === 'user' ? 'text-right' : ''}`}>
-                          <div className={`rounded-lg p-4 ${
-                            message.type === 'bot'
-                              ? 'bg-muted border border-border'
-                              : 'bg-primary text-primary-foreground'
-                          }`}>
-                            <p className="text-sm leading-relaxed">{message.message}</p>
-                          </div>
-                          {message.hasVisualization && (
-                            <div className="mt-4 p-4 bg-gradient-to-br from-ocean-surface/20 to-ocean-deep/20 rounded-lg border-2 border-dashed border-border">
-                              <div className="text-center">
-                                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                                <p className="text-sm font-semibold text-muted-foreground mb-2">
-                                  Average Salinity (PSU) near Equator
-                                </p>
-                                <div className="flex justify-center space-x-4 text-xs text-muted-foreground">
-                                  <span>Jan: 34.7</span>
-                                  <span>Feb: 34.9</span>
-                                  <span>Mar: 35.1</span>
-                                  <span>Apr: 35.3</span>
-                                  <span>May: 35.2</span>
-                                  <span>Jun: 34.8</span>
-                                </div>
-                                <div className="flex gap-2 justify-center mt-3">
-                                  <Button variant="outline" size="sm">
-                                    <Download className="w-3 h-3 mr-1" />
-                                    CSV
-                                  </Button>
-                                  <Button variant="outline" size="sm">
-                                    <Download className="w-3 h-3 mr-1" />
-                                    NetCDF
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          <div className="text-xs text-muted-foreground mt-2">
-                            {message.timestamp}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <CardContent className="flex-1 p-0 overflow-hidden">
+                  <iframe 
+                    title="Relevance AI Chat" // It's good practice to add a title for accessibility
+                    src="https://app.relevanceai.com/agents/f1db6c/a1235268-604d-49b6-9d97-e8501768b7a2/90598398-1a6d-41ab-8986-6380e58c7a73/embed-chat?hide_tool_steps=false&hide_file_uploads=false&hide_conversation_list=false&bubble_style=agent&primary_color=%23685FFF&bubble_icon=pd%2Fchat&input_placeholder_text=Type+your+message...&hide_logo=false&hide_description=false" 
+                    width="100%" 
+                    height="100%" 
+                    frameBorder="0" 
+                    allow="microphone"
+                  ></iframe>
                 </CardContent>
-
-                {/* Input Area */}
-                <div className="border-t p-4 bg-muted/30">
-                  <div className="flex gap-3">
-                    <Input
-                      placeholder="Ask about ocean data..."
-                      className="flex-1"
-                    />
-                    <Button variant="ocean" size="icon" className="flex-shrink-0">
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
-                    <div>Press Enter to send, Shift+Enter for new line</div>
-                    <div className="flex gap-4">
-                      <span>Support</span>
-                      <span>Legal</span>
-                    </div>
-                  </div>
-                </div>
               </Card>
             </div>
           </div>
